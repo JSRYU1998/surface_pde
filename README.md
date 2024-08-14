@@ -28,4 +28,4 @@ https://tosca.cs.technion.ac.il/book
 
 ## Codes
 
-'section_31' and 'section_32' descrbie the first and second of the framework, respectively.
+`section_31` and `section_32` descrbie the first and second of the framework, respectively.
