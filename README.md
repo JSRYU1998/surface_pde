@@ -30,4 +30,4 @@ https://drive.google.com/file/d/1fPGK8xCTbzYcD7p172hi7vpChpsF12Ud/view?usp=shari
 
 **Section 4.6 (TOSCA Dataset)**
 https://tosca.cs.technion.ac.il/book
-Reference : A.M. Bronstein, M. M. Bronstein, and R. Kimmel. Numerical geometry of non-rigid shapes. Springer Science & Business Media, 2008
+(Reference : A.M. Bronstein, M. M. Bronstein, and R. Kimmel. Numerical geometry of non-rigid shapes. Springer Science & Business Media, 2008)
