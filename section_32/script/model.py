@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch_geometric as pyg
 import torch_scatter
 
+
 class InteractionNetwork(pyg.nn.MessagePassing):
     def __init__(self, hidden_dim):
         super().__init__()
@@ -52,3 +53,46 @@ class Model(nn.Module):
             node_feature, edge_feature = self.layers[i](node_feature, data.edge_index, edge_feature=edge_feature)
         out = F.normalize(self.decode(node_feature))
         return out
+
+class SimpleNet_TimeDependent(nn.Module):
+    def __init__(self, init_eval):
+        super(SimpleNet_TimeDependent, self).__init__()
+        self.init_eval = init_eval
+        self.fc0 = nn.Linear(4, 128)
+        self.fc1 = nn.Linear(128, 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, 1)
+        
+        nn.init.xavier_uniform_(self.fc0.weight)
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.xavier_uniform_(self.fc3.weight)
+        
+    def forward(self, t, x):
+        tx = torch.concat((t, x),1)
+        u = torch.sin(torch.pi*self.fc0(tx))
+        u = torch.sin(torch.pi*self.fc1(u))
+        u = torch.sin(torch.pi*self.fc2(u))
+        u = self.fc3(u)
+        #return self.init_eval(x) + (1-torch.exp(t))*u
+        return self.init_eval(x) + t*u
+    
+# class SimpleNet_TimeIndependent(nn.Module):
+#     def __init__(self):
+#         super(SimpleNet_TimeIndependent, self).__init__()
+#         self.fc0 = nn.Linear(3, 128)
+#         self.fc1 = nn.Linear(128, 128)
+#         self.fc2 = nn.Linear(128, 128)
+#         self.fc3 = nn.Linear(128, 1)
+        
+#         nn.init.xavier_normal_(self.fc0.weight)
+#         nn.init.xavier_normal_(self.fc1.weight)
+#         nn.init.xavier_normal_(self.fc2.weight)
+#         nn.init.xavier_normal_(self.fc3.weight)
+        
+#     def forward(self, x):
+#         u = torch.sin(torch.pi*self.fc0(x))
+#         u = torch.sin(torch.pi*self.fc1(u))
+#         u = torch.sin(torch.pi*self.fc2(u))
+#         u = self.fc3(u)
+#         return u
