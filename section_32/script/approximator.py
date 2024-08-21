@@ -1,6 +1,6 @@
-import numpy as np
+# -*- coding: utf-8 -*-
+
 import torch
-import torch.nn.functional as F
 import torch_geometric as pyg
 from torch import cos, sin, atan
 from sklearn.neighbors import NearestNeighbors
@@ -218,7 +218,40 @@ class GNNLocalApproximation(PCALocalApproximation):
             self.tangent_vectors = torch.stack((tangent0, tangent1), 2)
             
             
-          
+            
+            
+class DeepFitLocalApproximation(PCALocalApproximation):
+    def __init__(self, args, X, normal_vectors):
+        # X: point clouds of size (N, 3)
+        # nv_pred : normal_vectors wrt GCS predicted by DeepFit (shape : (N,3))
+        self.X = X
+        self.normal_vectors = normal_vectors
+        self.args = args
+        
+        self.find_local_coordinate()
+        self.set_basis_function(extra=True)
+        self.compute_surface_coefficient()
+        
+    def find_local_coordinate(self):
+        # find K-nearest neighbors for each point
+        K = self.args.K
+        nbrs = NearestNeighbors(n_neighbors=K, algorithm='ball_tree').fit(self.X)
+        distances, self.indices = nbrs.kneighbors(self.X)
+        distances = torch.FloatTensor(distances)
+
+        self.X_knn = self.X[self.indices]
+        
+        # Wendland weight function
+        D = 1.1 * distances.max()
+        weight_eval = lambda d: (1 - d/D)**4 * (4*d/D + 1)
+        self.weight = weight_eval(distances)
+        
+        with torch.no_grad():            
+            tmp = atan(-(self.normal_vectors[:,0] / self.normal_vectors[:,1]))
+            tangent0 = torch.stack([cos(tmp), sin(tmp), torch.zeros_like(tmp)], 1)
+            tangent1 = torch.cross(self.normal_vectors, tangent0)
+            self.tangent_vectors = torch.stack((tangent0, tangent1), 2)
+            
             
             
 g11_eval = lambda coef_a: (1+coef_a[:,[2]]**2) / (1+coef_a[:,[1]]**2+coef_a[:,[2]]**2)
@@ -269,4 +302,3 @@ class SurfaceDerivative:
         self.g12 = self.g12.to(device)
         self.g22 = self.g22.to(device)
         return self
-            
